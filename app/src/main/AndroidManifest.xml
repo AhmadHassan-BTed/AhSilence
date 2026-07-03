@@ -2,6 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Required to capture the 7-second room hum -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Required to keep the DSP running without Android killing it -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- API 34+ requirement: Explicitly declare the type of foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- API 33+ requirement: Explicitly ask to post the persistent shield notification -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +24,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AhSilence"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,10 +32,17 @@
             android:theme="@style/Theme.AhSilence">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- This will act as the OS shield for the pure Kotlin audio engine. -->
+        <service
+            android:name=".framework.service.ActiveHumService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
     </application>
 
 </manifest>

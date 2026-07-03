@@ -11,6 +11,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.bted.ahsilence.domain.ports.AudioEngine
 import com.bted.ahsilence.framework.engine.NativeAudioDSP
+import android.util.Log
 
 /**
  * The OS-level shield. This keeps the pure Kotlin DSP engine alive in the background
@@ -43,9 +44,8 @@ class ActiveHumService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
-                // 1. Lock the service into the foreground instantly
+                Log.d("AhSilence", "Service: OS Foreground Shield raised. Starting engine...")
                 startForegroundSafely()
-                // 2. Ignite the native audio emission loop
                 engine.startAntiNoiseEmission()
             }
             ACTION_UPDATE_PARAMS -> {

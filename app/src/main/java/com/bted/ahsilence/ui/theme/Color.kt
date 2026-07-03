@@ -2,10 +2,15 @@ package com.bted.ahsilence.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Backgrounds
+val OledBlack = Color(0xFF000000)      // True black for maximum OLED battery savings
+val StudioSurface = Color(0xFF0A0A0A)  // Very dark gray for raised panels
+val GridLines = Color(0xFF2A2A2A)      // Subtle hardware etching
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Accents
+val AmberAccent = Color(0xFFFF5A00)    // High-visibility Neon Amber
+val AmberDimmed = Color(0x66FF5A00)    // 40% opacity for radar sweeps and glows
+
+// Typography
+val TextActive = Color(0xFFE0E0E0)     // Off-white to prevent eye strain
+val TextMuted = Color(0xFF555555)      // Dark gray for secondary labels

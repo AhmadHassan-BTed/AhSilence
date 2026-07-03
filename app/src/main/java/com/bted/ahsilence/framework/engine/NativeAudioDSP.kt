@@ -5,6 +5,7 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
+import android.util.Log
 import com.bted.ahsilence.domain.ports.AudioEngine
 import kotlinx.coroutines.*
 import kotlin.math.PI
@@ -51,15 +52,34 @@ class NativeAudioDSP : AudioEngine {
         // Pre-allocate buffer for the capture
         val readBuffer = ShortArray(fftBufferSize)
 
+        Log.d("AhSilence", "Engine: Mic engaged. Recording for $durationSeconds seconds...")
         record.startRecording()
 
         // Simulate the analysis window (allowing the environment to stabilize)
         delay(durationSeconds * 1000L)
 
-        // Capture the final stable frame for FFT analysis
+        Log.d("AhSilence", "Engine: Capture finished. Running FFT math...")
+
+        // Capture the final stable frame for FFT analysis with OS Hardware Failsafe
         var read = 0
+        var zeroByteCount = 0 // Escape hatch counter
+
         while (read < fftBufferSize) {
-            read += record.read(readBuffer, read, fftBufferSize - read)
+            val result = record.read(readBuffer, read, fftBufferSize - read)
+
+            if (result < 0) {
+                Log.e("AhSilence", "CRITICAL: AudioRecord hardware failed with OS error code: $result")
+                break
+            } else if (result == 0) {
+                zeroByteCount++
+                if (zeroByteCount > 50) {
+                    Log.e("AhSilence", "CRITICAL: Mic is engaged but returning 0 bytes. OS is blocking the stream.")
+                    break
+                }
+            } else {
+                read += result
+                zeroByteCount = 0 // Reset on successful read
+            }
         }
 
         record.stop()
@@ -67,6 +87,7 @@ class NativeAudioDSP : AudioEngine {
 
         // Extract Frequency via our highly-cohesive mathematical module
         detectedFrequency = fftEngine.extractDominantFrequency(readBuffer)
+        Log.d("AhSilence", "Engine: FFT Complete. Dominant frequency locked at $detectedFrequency Hz")
         return@withContext detectedFrequency
     }
 
@@ -76,6 +97,7 @@ class NativeAudioDSP : AudioEngine {
     override fun startAntiNoiseEmission() {
         if (isRunning) return
         isRunning = true
+        Log.d("AhSilence", "Engine: IGNITION. Firing continuous anti-wave at $detectedFrequency Hz")
 
         emissionJob = dspScope.launch {
             val minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfigOut, audioFormat)
@@ -98,14 +120,17 @@ class NativeAudioDSP : AudioEngine {
 
             val twoPi = 2.0 * PI
             var currentPhase = 0.0
-            val phaseIncrement = (twoPi * detectedFrequency) / sampleRate
 
             // The inner loop executes millions of times.
-            // It is strictly primitive math. No GC pauses, no frame drops.
             while (isRunning && isActive) {
                 // Snapshot volatile variables once per buffer to prevent tearing
                 val currentAmp = amplitudeFactor
                 val currentPhaseOffset = phaseOffsetRads
+
+                // FIX: Grab the latest frequency inside the loop so it updates
+                // the moment the 7-second FFT analysis completes!
+                val currentFreq = detectedFrequency
+                val phaseIncrement = (twoPi * currentFreq) / sampleRate
 
                 for (i in playBuffer.indices) {
                     // Apply UI phase shift to the raw sine wave
@@ -143,6 +168,7 @@ class NativeAudioDSP : AudioEngine {
     }
 
     override fun stop() {
+        Log.d("AhSilence", "Engine: TERMINATED. DSP loop halted.")
         isRunning = false
         emissionJob?.cancel()
     }

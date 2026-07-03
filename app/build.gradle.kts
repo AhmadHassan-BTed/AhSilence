@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.bted.ahsilence"
-    compileSdk = 35
+    compileSdk = 36 // FIX: Bumped from 35 to 36 to resolve dependency metadata conflicts
 
     defaultConfig {
         applicationId = "com.bted.ahsilence"
-        minSdk = 26 // Perfect. API 26 is required for Foreground Services.
-        targetSdk = 35
+        minSdk = 26
+        targetSdk = 35 // Stays at 35 to preserve current runtime behaviors
         versionCode = 1
         versionName = "1.0"
 
@@ -57,9 +57,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // for inject ControlViewModel into your DashboardScreen
+    // --- New Architecture Dependencies ---
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
-
-    // for StateFlow and isolating the DSP math loop on a background thread
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }
