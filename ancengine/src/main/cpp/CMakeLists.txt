@@ -23,15 +23,15 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -funroll-loops -fno-
 find_package(oboe REQUIRED CONFIG)
 
 add_library(ancengine SHARED
-        src/dsp/Oscillator.h
-        src/dsp/FxLmsFilter.h
-        src/dsp/SecondaryPathModel.h
-        src/audio/AncEngine.h
-        src/audio/AncEngine.cpp
-        src/jni/native_bridge.cpp
+        dsp/Oscillator.h
+        dsp/FxLmsFilter.h
+        dsp/SecondaryPathModel.h
+        audio/AncEngine.h
+        audio/AncEngine.cpp
+        jni/native_bridge.cpp
 )
 
-target_include_directories(ancengine PRIVATE src)
+target_include_directories(ancengine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(ancengine
         PRIVATE
