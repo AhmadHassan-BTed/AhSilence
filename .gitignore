@@ -1,17 +1,52 @@
-# Build & Generation
-/build
+# ===================================================================
+# AhSilence — .gitignore
+# ===================================================================
+
+# ----- Build & Generation -----
+/build/
 app/build/
 .gradle/
-.externalNativeBuild/
 .cxx/
+.externalNativeBuild/
 captures/
+*.apk
+*.aab
+*.ap_
+*.dex
 
-# IDE & Local Configurations
+# ----- IDE & Editor -----
 .idea/
 *.iml
-local.properties
-
-# User-specific & OS files
-.DS_Store
+*.iws
+*.ipr
+.vscode/
+.fleet/
 *.swp
+*.swo
+*~
+
+# ----- Local Configuration -----
+local.properties
+keystore.properties
+
+# ----- Kotlin -----
+.kotlin/
+
+# ----- Environment & Secrets -----
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.key
+*.pem
+
+# ----- OS Artifacts -----
+.DS_Store
 Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# ----- Profiling & Debugging -----
+*.hprof
+*.log

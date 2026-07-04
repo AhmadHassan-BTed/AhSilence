@@ -12,9 +12,10 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
-import com.bted.ahsilence.framework.service.ActiveHumService
+import com.bted.ahsilence.core.constants.AudioConstants
+import com.bted.ahsilence.data.service.ActiveHumService
 import com.bted.ahsilence.presentation.ControlViewModel
-import com.bted.ahsilence.ui.screens.DashboardScreen
+import com.bted.ahsilence.ui.screen.DashboardScreen
 import com.bted.ahsilence.ui.theme.AhSilenceTheme
 
 class MainActivity : ComponentActivity() {
@@ -84,7 +85,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun startAcousticService() {
         val intent = Intent(this, ActiveHumService::class.java).apply {
-            action = ActiveHumService.ACTION_START
+            action = AudioConstants.ACTION_START
         }
 
         // Android O+ requires startForegroundService to guarantee the notification displays
@@ -100,7 +101,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun stopAcousticService() {
         val intent = Intent(this, ActiveHumService::class.java).apply {
-            action = ActiveHumService.ACTION_STOP
+            action = AudioConstants.ACTION_STOP
         }
         startService(intent)
     }

@@ -38,7 +38,7 @@
 
         <!-- This will act as the OS shield for the pure Kotlin audio engine. -->
         <service
-            android:name=".framework.service.ActiveHumService"
+            android:name=".data.service.ActiveHumService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />

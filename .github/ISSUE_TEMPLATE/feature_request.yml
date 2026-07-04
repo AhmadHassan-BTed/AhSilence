@@ -1,0 +1,38 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature you'd like.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - DSP Engine (FFT / Audio)
+        - UI / UX
+        - Architecture
+        - Documentation
+        - Other
+    validations:
+      required: true

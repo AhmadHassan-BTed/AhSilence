@@ -9,22 +9,32 @@
     <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android_API-26%2B-3DDC84?style=flat-square&logo=android" alt="API Level"></a>
     <img src="https://img.shields.io/badge/Architecture-MVVM%20%7C%20Clean-blue?style=flat-square" alt="Architecture">
     <img src="https://img.shields.io/badge/DSP-Fast_Fourier-orange?style=flat-square" alt="DSP">
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-green?style=flat-square" alt="License"></a>
   </p>
 </div>
 
 ---
 
-## Abstract
+## Overview
 
-**AhSilence** is a native Android active noise cancellation (ANC) engine. It bridges the gap between complex digital signal processing (DSP) and human comfort. By analyzing the environment for persistent, low-frequency hums (such as AC units or electrical drones) and emitting phase-inverted audio waves, the system mathematically neutralizes acoustic disturbances, allowing individuals to reclaim their quiet spaces.
+**AhSilence** is a native Android active noise cancellation (ANC) engine built with Jetpack Compose and Kotlin. It bridges the gap between complex digital signal processing (DSP) and human comfort by analyzing the environment for persistent, low-frequency hums (such as AC units or electrical drones) and emitting phase-inverted audio waves that mathematically neutralize acoustic disturbances.
 
-Engineered for performance, the application runs a zero-allocation, garbage-collection-free hot loop, ensuring seamless destructive interference without frame drops or OS throttling.
+The application runs a **zero-allocation, GC-free hot loop**, ensuring seamless destructive interference without frame drops or OS throttling.
+
+### Key Features
+
+| Component | Implementation | User Benefit |
+|---|---|---|
+| **FFT Engine** | Custom Cooley-Tukey Radix-2 algorithm on real-time PCM buffers | Automatically detects the dominant background drone |
+| **Phase Calibrator** | Continuous 360° trigonometric dial bound to memory blocks | Manual wave alignment to compensate for hardware/BT latency |
+| **OS Shield** | Android Foreground Service with persistent notification | Keeps cancellation active while screen is locked |
+| **Stateless UI** | `StateFlow` + Compose hoisted parameters | Zero battery drain from unnecessary recompositions |
 
 ---
 
-## System Architecture
+## Architecture
 
-The repository adheres strictly to **Clean Architecture** principles, enforcing a unidirectional data flow and isolating the Android Framework from the core mathematical business logic.
+AhSilence follows **Clean Architecture** with strict unidirectional data flow and complete isolation of the Android framework from core business logic.
 
 ```mermaid
 graph TD
@@ -38,7 +48,7 @@ graph TD
         PORT{AudioEngine Port}
     end
 
-    subgraph Framework Layer
+    subgraph Data Layer
         SERVICE[ActiveHumService]
         DSP[NativeAudioDSP]
         FFT[FastFourier]
@@ -54,14 +64,9 @@ graph TD
 
     classDef domain fill:#1E1E1E,stroke:#7F52FF,stroke-width:2px;
     class STATE,PORT domain;
-
 ```
 
----
-
-## Request & Data Flow
-
-The audio processing pipeline prioritizes ultra-low latency. Below is the lifecycle of how the physical environment is sampled, analyzed, and neutralized.
+### Data Flow
 
 ```mermaid
 sequenceDiagram
@@ -86,81 +91,113 @@ sequenceDiagram
         E->>S: Push Buffer (AudioTrack.WRITE_BLOCKING)
         S->>M: Destructive Acoustic Interference
     end
-
 ```
 
 ---
 
-## Internal Module Structure
+## Project Structure
 
-The codebase is highly cohesive and decoupled. Below is the organizational hierarchy of the application.
-
-```text
+```
 app/src/main/java/com/bted/ahsilence/
-├── domain/                         # Pure Kotlin, Zero Android Dependencies
-│   ├── models/AcousticState.kt     # Immutable single source of truth
-│   └── ports/AudioEngine.kt        # Abstraction for the DSP layer
+├── core/                                # Cross-cutting concerns
+│   ├── constants/AudioConstants.kt      # Centralised magic numbers
+│   ├── di/AudioEngineLocator.kt         # Lightweight service locator
+│   └── logging/AppLogger.kt            # Structured logging facade
 │
-├── framework/                      # Heavy OS / Hardware Integrations
-│   ├── engine/FastFourier.kt       # Radix-2 FFT Math Engine
-│   ├── engine/NativeAudioDSP.kt    # AudioRecord / AudioTrack Pipeline
-│   └── service/ActiveHumService.kt # Foreground OS Shield
+├── domain/                              # Pure Kotlin — zero Android imports
+│   ├── model/AcousticState.kt           # Immutable single source of truth
+│   └── port/AudioEngine.kt             # DSP engine contract
 │
-├── presentation/                   # State Management
-│   └── ControlViewModel.kt         # Jetpack Compose Bridge
+├── data/                                # Android framework implementations
+│   ├── engine/FastFourier.kt            # Radix-2 FFT math engine
+│   ├── engine/NativeAudioDSP.kt        # AudioRecord / AudioTrack pipeline
+│   └── service/ActiveHumService.kt     # Foreground service (OS Shield)
 │
-└── ui/                             # Visual Representation
-    ├── screens/DashboardScreen.kt  # Stateless UI (Pro / Simple mode)
-    ├── screens/components/         # Reusable UI dials and sliders
-    └── theme/                      # Pure OLED Black / Neon Amber Styling
-
+├── presentation/                        # State management
+│   └── ControlViewModel.kt             # Jetpack Compose bridge
+│
+├── ui/                                  # Visual layer
+│   ├── screen/DashboardScreen.kt        # Main dashboard (Pro / Simple mode)
+│   ├── component/                       # Reusable UI elements
+│   │   ├── CalibratorRing.kt           # 360° phase dial
+│   │   └── GainSlider.kt               # Vertical amplitude fader
+│   └── theme/                           # OLED Black / Neon Amber design system
+│       ├── Color.kt
+│       ├── Theme.kt
+│       └── Type.kt
+│
+└── MainActivity.kt                      # Entry point
 ```
 
 ---
 
-## Feature Overview
+## Getting Started
 
-| Component               | Technical Implementation                                                                               | Human Benefit                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| **Acoustic FFT Engine** | Runs a custom Cooley-Tukey Radix-2 algorithm to parse real-time PCM buffers into discrete frequencies. | Automatically listens to the room and locks onto the most annoying background drone. |
-| **Phase Calibrator**    | Employs a continuous 360° trigonometric UI dial bound natively to memory blocks.                       | Allows manual wave alignment to compensate for unpredictable Bluetooth latency.      |
-| **OS Shield**           | Binds the background thread to an Android Foreground Service.                                          | Keeps the cancellation wave active while the screen is locked or in pocket.          |
-| **Stateless UI**        | Engineered purely with `StateFlow` and Compose hoisted parameters.                                     | Prevents battery drain and visual stutter while rendering complex data.              |
+### Prerequisites
 
----
+- **Android Studio** Ladybug (2024.2.1+)
+- **JDK 21+**
+- **Physical Android device** — emulators do not support low-latency hardware microphone FFT testing
 
-## Build & Deployment Pipeline
-
-The project uses Gradle (Kotlin DSL) and targets Android API 36.
-
-**Prerequisites:**
-
-- Android Studio (Ladybug / 2024.2.1+)
-- JDK 21+
-- A physical Android device (Emulators do not accurately support low-latency hardware microphone FFT testing).
-
-**Compilation:**
+### Build
 
 ```bash
-# Clone the repository
-git clone [https://github.com/ahmadhassan-bted/ahsilence.git](https://github.com/ahmadhassan-bted/ahsilence.git)
-
-# Navigate to project directory
+# Clone
+git clone https://github.com/ahmadhassan-bted/ahsilence.git
 cd ahsilence
 
-# Clean and Build
-./gradlew clean build
+# Build debug APK
+./gradlew clean assembleDebug
 
+# Run unit tests
+./gradlew test
+
+# Lint check
+./gradlew lint
+```
+
+### Install
+
+```bash
+# Install on connected device
+./gradlew installDebug
 ```
 
 ---
 
-## Development Workflow & Contributions
+## Tech Stack
 
-The repository aims to maintain a high standard of architectural cleanliness. New features, pull requests, and DSP optimizations are welcomed.
+| Layer | Technology |
+|---|---|
+| Language | Kotlin 2.0.21 |
+| UI | Jetpack Compose (Material 3) |
+| State | StateFlow + ViewModel |
+| Audio Capture | `AudioRecord` (PCM 16-bit, 44.1kHz) |
+| Audio Playback | `AudioTrack` (streaming mode) |
+| FFT | Custom Cooley-Tukey Radix-2 |
+| Background | Foreground Service (`mediaPlayback`) |
+| Build | Gradle (Kotlin DSL) + Version Catalog |
+| Min SDK | API 26 (Android 8.0) |
 
-When contributing, please ensure:
+---
 
-1. **Zero Allocations in Hot Loops:** Any modifications to `NativeAudioDSP.kt` or `FastFourier.kt` must not utilize the `new` keyword, create objects, or trigger the JVM Garbage Collector.
-2. **Domain Isolation:** Android lifecycle elements (`Context`, `Intents`) must never leak into the `/domain` or `/presentation` layers.
-3. **UI Purity:** All Jetpack Compose screens must remain stateless.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit conventions, and the non-negotiable architectural rules (zero-allocation hot loops, domain isolation, UI purity).
+
+## Security
+
+AhSilence is fully offline — zero network calls, zero data collection, zero telemetry. See [SECURITY.md](SECURITY.md).
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned features including multi-frequency cancellation, adaptive algorithms, and Bluetooth latency compensation.
+
+## License
+
+```
+Copyright 2025 Ahmad Hassan
+
+Licensed under the Apache License, Version 2.0.
+See LICENSE for details.
+```

@@ -2,16 +2,17 @@ package com.bted.ahsilence.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bted.ahsilence.domain.models.AcousticState
-import com.bted.ahsilence.domain.ports.AudioEngine
-import com.bted.ahsilence.framework.service.AudioEngineLocator
+import com.bted.ahsilence.core.constants.AudioConstants
+import com.bted.ahsilence.core.di.AudioEngineLocator
+import com.bted.ahsilence.core.logging.AppLogger
+import com.bted.ahsilence.domain.model.AcousticState
+import com.bted.ahsilence.domain.port.AudioEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import android.util.Log
 
 /**
  * The State Management bridge.
@@ -32,15 +33,17 @@ class ControlViewModel : ViewModel() {
     }
 
     /**
-     * Captures 7 seconds of audio on a background thread to find the dominant hum.
+     * Captures ambient audio on a background thread to find the dominant hum.
      * The UI will automatically update when the math is finished.
      */
     private fun analyzeEnvironment() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("AhSilence", "ViewModel: Starting 7-second room analysis...")
-            val frequency = engine.captureAndAnalyzeEnv(durationSeconds = 7)
+            AppLogger.d("ViewModel: Starting ${AudioConstants.AMBIENT_SCAN_DURATION_SECONDS}-second room analysis...")
+            val frequency = engine.captureAndAnalyzeEnv(
+                durationSeconds = AudioConstants.AMBIENT_SCAN_DURATION_SECONDS
+            )
 
-            Log.d("AhSilence", "ViewModel: Analysis complete. Hum detected at $frequency Hz")
+            AppLogger.d("ViewModel: Analysis complete. Hum detected at $frequency Hz")
             _state.update { currentState ->
                 currentState.copy(detectedFrequencyHz = frequency)
             }
@@ -74,7 +77,7 @@ class ControlViewModel : ViewModel() {
     fun togglePowerStatus() {
         _state.update { currentState ->
             val isNowOn = !currentState.isEmitting
-            Log.d("AhSilence", "ViewModel: User toggled power. Emitting state is now: $isNowOn")
+            AppLogger.d("ViewModel: User toggled power. Emitting state is now: $isNowOn")
             currentState.copy(isEmitting = isNowOn)
         }
     }
