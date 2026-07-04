@@ -8,7 +8,7 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.3"
 composeBom = "2024.09.00"
-viewmodelCompose = "2.8.3"
+viewmodelCompose = "2.11.0"
 coroutines = "1.8.1"
 
 [libraries]
