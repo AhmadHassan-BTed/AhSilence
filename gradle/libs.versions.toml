@@ -9,7 +9,7 @@ lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.3"
 composeBom = "2024.09.00"
 viewmodelCompose = "2.8.3"
-coroutines = "1.8.1"
+coroutines = "1.11.0"
 oboe = "1.10.0"
 
 [libraries]
