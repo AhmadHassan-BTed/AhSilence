@@ -1,15 +1,17 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
+# Build & Generation
 /build
-/captures
-.externalNativeBuild
-.cxx
+app/build/
+.gradle/
+.externalNativeBuild/
+.cxx/
+captures/
+
+# IDE & Local Configurations
+.idea/
+*.iml
 local.properties
+
+# User-specific & OS files
+.DS_Store
+*.swp
+Thumbs.db
