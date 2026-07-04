@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "com.bted.ahsilence"
     compileSdk = 36
+    ndkVersion = "27.1.12297006"
 
     defaultConfig {
         applicationId = "com.bted.ahsilence"
@@ -49,6 +50,9 @@ android {
 }
 
 dependencies {
+    // --- Native ANC Engine ---
+    implementation(project(":ancengine"))
+
     // --- Core ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

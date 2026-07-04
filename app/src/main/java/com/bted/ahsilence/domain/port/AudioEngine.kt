@@ -5,4 +5,5 @@ interface AudioEngine {
     fun startAntiNoiseEmission()
     fun updateParameters(amplitudePercentage: Float, phaseDegrees: Float)
     fun stop()
+    fun release() {}
 }

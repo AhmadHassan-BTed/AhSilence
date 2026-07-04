@@ -3,10 +3,9 @@
 # ===================================================================
 
 # ----- Build & Generation -----
-/build/
-app/build/
+**/build/
 .gradle/
-.cxx/
+**/.cxx/
 .externalNativeBuild/
 captures/
 *.apk

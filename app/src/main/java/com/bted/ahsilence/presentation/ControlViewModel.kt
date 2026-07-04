@@ -81,4 +81,10 @@ class ControlViewModel : ViewModel() {
             currentState.copy(isEmitting = isNowOn)
         }
     }
+
+    override fun onCleared() {
+        engine.stop()
+        engine.release()
+        super.onCleared()
+    }
 }

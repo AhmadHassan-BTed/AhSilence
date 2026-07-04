@@ -1,11 +1,11 @@
-package com.bted.ahsilence.data.engine
+package com.bted.ahsilence.framework.engine
 
 import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import com.bted.ahsilence.core.logging.AppLogger
-import com.bted.ahsilence.domain.port.AudioEngine
+import android.util.Log
+import com.bted.ahsilence.domain.ports.AudioEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -28,6 +28,8 @@ import kotlinx.coroutines.withContext
  * NOTE: this adds a native lifecycle that the old class didn't have.
  * Call [release] when whatever owns this adapter is torn down (e.g. from
  * a ViewModel's onCleared()), or the native AncEngine instance will leak.
+ * If [AudioEngine] doesn't already expose a lifecycle hook for this,
+ * you'll want to add one.
  */
 class NativeAudioDSP : AudioEngine {
 
@@ -65,7 +67,7 @@ class NativeAudioDSP : AudioEngine {
         )
         val readBuffer = ShortArray(fftBufferSize)
 
-        AppLogger.d("Engine: Mic engaged for coarse FFT estimate ($durationSeconds s)...")
+        Log.d("AhSilence", "Engine: Mic engaged for coarse FFT estimate ($durationSeconds s)...")
         record.startRecording()
         delay(durationSeconds * 1000L)
 
@@ -74,12 +76,12 @@ class NativeAudioDSP : AudioEngine {
         while (read < fftBufferSize) {
             val result = record.read(readBuffer, read, fftBufferSize - read)
             if (result < 0) {
-                AppLogger.e("CRITICAL: AudioRecord hardware failed with OS error code: $result")
+                Log.e("AhSilence", "CRITICAL: AudioRecord hardware failed with OS error code: $result")
                 break
             } else if (result == 0) {
                 zeroByteCount++
                 if (zeroByteCount > 50) {
-                    AppLogger.e("CRITICAL: Mic is engaged but returning 0 bytes. OS is blocking the stream.")
+                    Log.e("AhSilence", "CRITICAL: Mic is engaged but returning 0 bytes. OS is blocking the stream.")
                     break
                 }
             } else {
@@ -91,7 +93,7 @@ class NativeAudioDSP : AudioEngine {
         record.release()
 
         val detectedFrequency = fftEngine.extractDominantFrequency(readBuffer)
-        AppLogger.d("Engine: FFT complete. Handing $detectedFrequency Hz to the native tracker.")
+        Log.d("AhSilence", "Engine: FFT complete. Handing $detectedFrequency Hz to the native tracker.")
         nativeSetFrequency(nativeHandle, detectedFrequency)
         return@withContext detectedFrequency
     }
@@ -99,7 +101,7 @@ class NativeAudioDSP : AudioEngine {
     override fun startAntiNoiseEmission() {
         ensureEngineCreated()
         val started = nativeStart(nativeHandle)
-        AppLogger.d("Engine: native Oboe duplex stream started = $started")
+        Log.d("AhSilence", "Engine: native Oboe duplex stream started = $started")
     }
 
     override fun updateParameters(amplitudePercentage: Float, phaseDegrees: Float) {
@@ -115,7 +117,7 @@ class NativeAudioDSP : AudioEngine {
     }
 
     /** Frees the native AncEngine. See the class-level NOTE above. */
-    override fun release() {
+    fun release() {
         if (nativeHandle != 0L) {
             nativeDestroy(nativeHandle)
             nativeHandle = 0L
